@@ -14,4 +14,4 @@ ENV CI=true
 
 # The Playwright image already contains Chromium, Firefox, WebKit, and their
 # Ubuntu system dependencies, so no apt-get or browser install step is needed.
-CMD ["npm", "run", "test:render"]
+CMD ["npx", "playwright", "test"]
