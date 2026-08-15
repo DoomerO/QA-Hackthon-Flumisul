@@ -6,7 +6,8 @@
   "scripts": {
     "test": "playwright test",
     "test:frontend": "playwright test tests/frontend",
-    "test:backend": "playwright test tests/backend"
+    "test:backend": "playwright test tests/backend",
+    "test:render": "node render-test-runner.js"
   },
   "keywords": [],
   "author": "",

@@ -36,16 +36,23 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: 'backend/**/*.spec.ts',
     },
 
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
+      testIgnore: 'backend/**/*.spec.ts',
     },
 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+      testIgnore: 'backend/**/*.spec.ts',
+    },
+    {
+      name: 'backend',
+      testMatch: 'backend/**/*.spec.ts',
     },
 
     /* Test against mobile viewports. */

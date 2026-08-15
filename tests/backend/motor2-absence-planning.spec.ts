@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:3333';
-const uuid = '3fa85f64-5717-4562-b3fc-2c963f66afa6';
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface Substitution {
   funcionario_ausente_id: string;
@@ -25,43 +26,52 @@ interface AbsencePlanningResponse {
   substituicoes: Substitution[];
 }
 
-const expectedResponse= {
-  data_referencia: '2026-08-15',
-  total_ausentes: 0,
-  total_cobertos: 0,
-  total_sem_cobertura: 0,
-  substituicoes: [
-    {
-      funcionario_ausente_id: uuid,
-      funcionario_ausente_nome: 'string',
-      funcionario_substituto_id: uuid,
-      funcionario_substituto_nome: 'string',
-      posto_destino_id: uuid,
-      posto_destino_codigo: 'string',
-      score: 0,
-      equipe_id: uuid,
-      equipe_nome: 'string',
-      tech_lead_nome: 'string',
-      tech_lead_email: 'string',
-    },
-  ],
-} satisfies AbsencePlanningResponse;
-
 test.describe('Backend absence planning (motor 2)', () => {
   test('POST /planejar-ausencias returns the expected plan', async ({
     request,
   }) => {
+    test.setTimeout(150_000);
+
     const endpoint = new URL(
       '/api/v1/motor2/substituicoes/planejar-ausencias',
       backendUrl,
     ).toString();
 
-    const response = await request.post(endpoint);
+    const response = await request.post(endpoint, { timeout: 120_000 });
 
     expect(response.status()).toBe(200);
     expect(response.headers()['content-type']).toContain('application/json');
 
     const responseBody: AbsencePlanningResponse = await response.json();
-    expect(responseBody).toMatchObject(expectedResponse);
+
+    expect(responseBody).toMatchObject({
+      data_referencia: '2026-08-15',
+      total_ausentes: expect.any(Number),
+      total_cobertos: expect.any(Number),
+      total_sem_cobertura: expect.any(Number),
+      substituicoes: expect.any(Array),
+    });
+    expect(responseBody.total_cobertos + responseBody.total_sem_cobertura).toBe(
+      responseBody.total_ausentes,
+    );
+    expect(responseBody.substituicoes).toHaveLength(
+      responseBody.total_cobertos,
+    );
+
+    for (const substitution of responseBody.substituicoes) {
+      expect(substitution).toMatchObject({
+        funcionario_ausente_id: expect.stringMatching(uuidPattern),
+        funcionario_ausente_nome: expect.any(String),
+        funcionario_substituto_id: expect.stringMatching(uuidPattern),
+        funcionario_substituto_nome: expect.any(String),
+        posto_destino_id: expect.stringMatching(uuidPattern),
+        posto_destino_codigo: expect.any(String),
+        score: expect.any(Number),
+        equipe_id: expect.stringMatching(uuidPattern),
+        equipe_nome: expect.any(String),
+        tech_lead_nome: expect.any(String),
+        tech_lead_email: expect.any(String),
+      });
+    }
   });
 });

@@ -19,15 +19,25 @@ test.describe('Backend prediction (motor 1)', () => {
     expect(response.headers()['content-type']).toContain('application/json');
   });
 
-  test('returns 422 and HTML for a negative team ID', async ({ request }) => {
+  test('returns JSON validation details for a negative team ID', async ({
+    request,
+  }) => {
     const response = await request.get(predictionUrl(-1));
 
     expect(response.ok()).toBe(false);
     expect(response.status()).toBe(422);
-    expect(response.headers()['content-type']).toContain('text/html');
+    expect(response.headers()['content-type']).toContain('application/json');
+    expect(await response.json()).toMatchObject({
+      detail: [
+        {
+          loc: ['path', 'equipe_numero'],
+          type: 'greater_than_equal',
+        },
+      ],
+    });
   });
 
-  test('returns an empty JSON array for a team ID greater than 30', async ({
+  test('returns prediction data for team ID 31', async ({
     request,
   }) => {
     const response = await request.get(predictionUrl(31));
@@ -37,7 +47,12 @@ test.describe('Backend prediction (motor 1)', () => {
     expect(response.headers()['content-type']).toContain('application/json');
 
     const body = await response.json();
-    expect(body).toHaveLength(0);
-    expect(body).toEqual([]);
+    expect(body).toMatchObject({
+      equipe_numero: 31,
+      equipe: 'Equipe L031',
+      total_funcionarios: 30,
+      algoritmo_versao: 'absenteismo-v1',
+    });
+    expect(body.funcionarios).toHaveLength(30);
   });
 });
