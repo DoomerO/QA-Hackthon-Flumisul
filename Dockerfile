@@ -10,7 +10,10 @@ RUN npm ci
 COPY . .
 
 # Enables the CI retry/worker settings from playwright.config.ts.
-ENV CI=true
+ENV CI=true \
+    PORT=10000
+
+EXPOSE 10000
 
 # The Playwright image already contains Chromium, Firefox, WebKit, and their
 # Ubuntu system dependencies, so no apt-get or browser install step is needed.
