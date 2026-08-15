@@ -19,11 +19,11 @@ test.describe('Backend prediction (motor 1)', () => {
     expect(response.headers()['content-type']).toContain('application/json');
   });
 
-  test('returns 404 and HTML for a negative team ID', async ({ request }) => {
+  test('returns 422 and HTML for a negative team ID', async ({ request }) => {
     const response = await request.get(predictionUrl(-1));
 
     expect(response.ok()).toBe(false);
-    expect(response.status()).toBe(404);
+    expect(response.status()).toBe(422);
     expect(response.headers()['content-type']).toContain('text/html');
   });
 
